@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
-import type { IApiComponentProps} from 'dumi/theme';
+import type { IApiComponentProps } from 'dumi/theme';
 import { context, useApiData } from 'dumi/theme';
 import Table from './Table';
+import { isPrimaryType, getComplicatedType } from '../utils/isPrimaryType';
 
 const LOCALE_TEXTS = {
   'zh-CN': {
@@ -19,6 +20,8 @@ const LOCALE_TEXTS = {
     required: '(required)',
   },
 };
+const linkRegG = /\{@link\s*?(\S*?)\s*?\|(.*?)\}/g;
+const linkReg = /\{@link\s*?(\S*?)\s*?\|(.*?)\}/;
 
 export default ({ identifier, export: expt }: IApiComponentProps) => {
   const data = useApiData(identifier);
@@ -38,18 +41,48 @@ export default ({ identifier, export: expt }: IApiComponentProps) => {
             </tr>
           </thead>
           <tbody>
-            {data[expt]?.map(row => (
-              <tr key={row.identifier}>
-                <td>{row.identifier}</td>
-                <td>{row.description || '--'}</td>
-                <td>
-                  <code>{row.type}</code>
-                </td>
-                <td>
-                  <code>{row.default || (row.required && texts.required) || '--'}</code>
-                </td>
-              </tr>
-            ))}
+            {data[expt]?.map(row => {
+              if (linkReg.test(row.description)) {
+                const groups = row.description.match(linkRegG);
+                const links = groups.map(group => {
+                  const [, target, name] = group.match(linkReg);
+                  return {
+                    title: name,
+                    url: target,
+                  };
+                });
+                row.links = links;
+                row.description = row.description.replaceAll(linkRegG, '');
+              }
+              return (
+                <tr key={row.identifier}>
+                  <td>{row.identifier}</td>
+                  <td>
+                    <span dangerouslySetInnerHTML={{ __html: row.description }} />
+                    {row.links && <br /> &&
+                      row.links?.map((link, i) => (
+                        <a key={link.title} href={link.url}>
+                          {link.title}
+                        </a>
+                      ))}
+                  </td>
+                  <td>
+                    <a
+                      href={
+                        isPrimaryType(row.type)
+                          ? 'javascript:void(0);'
+                          : `#entity-${getComplicatedType(row.type)}`
+                      }
+                    >
+                      <code>{row.type}</code>
+                    </a>
+                  </td>
+                  <td>
+                    <code>{row.default || (row.required && texts.required) || '--'}</code>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
       )}

@@ -6,15 +6,16 @@ import is from 'hast-util-is-element';
 import has from 'hast-util-has-property';
 import visit from 'unist-util-visit';
 import { parseElmAttrToProps } from './utils';
-import parser from '../../api-parser';
+import type parser from '../../api-parser';
 import { getModuleResolvePath } from '../../utils/moduleResolver';
 import { listenFileOnceChange } from '../../utils/watcher';
 import ctx from '../../context';
 import type { ArgsType } from '@umijs/utils';
 import type { IDumiUnifiedTransformer, IDumiElmNode } from '.';
 
-import { TypescriptParser, ClassLikeDeclaration } from 'typescript-parser';
-import { AtomPropsDefinition } from 'dumi-assets-types';
+import type { ClassLikeDeclaration } from 'typescript-parser';
+import { TypescriptParser } from 'typescript-parser';
+import type { AtomPropsDefinition } from 'dumi-assets-types';
 
 const tparser = new TypescriptParser();
 
@@ -50,13 +51,13 @@ function serializeEntityNodes(
     // render large API title if it is default export
     // or it is the first export and the exports attribute was not custom
 
-    const isInsertAPITitle = expt === 'default' || (!i && !parsedAttrs.exports);
+    const isInsertEntityTitle = !i && node.properties.showfragmenttitle;
     // render sub title for non-default export
     const isInsertSubTitle = expt !== 'default';
     const entityNode = deepmerge({}, node);
 
     // insert API title
-    if (showTitle && isInsertAPITitle) {
+    if (showTitle && isInsertEntityTitle) {
       list.push(
         {
           type: 'element',
@@ -182,7 +183,7 @@ export default function entity(): IDumiUnifiedTransformer {
 
           parseOpts.componentName = componentName;
           identifier = 'entity-' + componentName || src;
-          definitions = parseDefinitions(absPath)
+          definitions = parseDefinitions(absPath);
 
           // trigger listener to update previewer props after this file changed
           watchComponentUpdate(absPath, identifier, parseOpts);
@@ -228,7 +229,7 @@ function parseDefinitions(sourcePath: string): AtomPropsDefinition {
         return {
           identifier: property.name,
           type: property.type,
-          description: '',
+          description: property.name,
           required: !property.isOptional ? true : undefined,
         };
       });
