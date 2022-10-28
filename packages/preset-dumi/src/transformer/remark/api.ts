@@ -39,12 +39,13 @@ function serializeAPINodes(
 ) {
   const parsedAttrs = parseElmAttrToProps(node.properties);
   const expts: string[] = parsedAttrs.exports || Object.keys(definitions);
-  const showTitle = !parsedAttrs.hideTitle
+  const showTitle = !parsedAttrs.hideTitle;
 
   return expts.reduce<(IDumiElmNode | Node)[]>((list, expt, i) => {
     // render large API title if it is default export
     // or it is the first export and the exports attribute was not custom
-    const isInsertAPITitle = expt === 'default' || (!i && !parsedAttrs.exports);
+    const isInsertAPITitle =
+      (expt === 'default' || (!i && !parsedAttrs.exports)) && node.properties.showfragmenttitle;
     // render sub title for non-default export
     const isInsertSubTitle = expt !== 'default';
     const apiNode = deepmerge({}, node);
@@ -137,9 +138,12 @@ function watchComponentUpdate(
     // watch next turn
     // FIXME: workaround for resolve no such file error
     /* istanbul ignore next */
-    setTimeout(() => {
-      watchComponentUpdate(absPath, identifier, parseOpts);
-    }, fs.existsSync(absPath) ? 0 : 50);
+    setTimeout(
+      () => {
+        watchComponentUpdate(absPath, identifier, parseOpts);
+      },
+      fs.existsSync(absPath) ? 0 : 50,
+    );
   });
 }
 
@@ -182,7 +186,7 @@ export default function api(): IDumiUnifiedTransformer {
               sourcePath: path.dirname(this.data('fileAbsPath')),
               silent: true,
             });
-            
+
             parseOpts.componentName = vFile.data.componentName;
             definitions = parser(sourcePath, parseOpts);
             identifier = vFile.data.componentName;
