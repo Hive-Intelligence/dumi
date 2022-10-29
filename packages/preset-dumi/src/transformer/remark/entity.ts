@@ -218,22 +218,68 @@ export default function entity(): IDumiUnifiedTransformer {
     });
   };
 }
+
 function parseDefinitions(sourcePath: string): AtomPropsDefinition {
   const parsed = tparser.parseFileSync(sourcePath, '');
   const declarations = parsed.declarations;
   const definitions: AtomPropsDefinition = {};
-  declarations.forEach(declaration => {
-    if (Object.hasOwn(declaration, 'properties')) {
-      const d = declaration as ClassLikeDeclaration;
-      definitions[declaration.name] = d.properties.map(property => {
-        return {
-          identifier: property.name,
-          type: property.type,
-          description: property.name,
-          required: !property.isOptional ? true : undefined,
-        };
-      });
+  declarations2Definitions(declarations, definitions);
+  const resources = parsed.resources;
+  resources2Definitions(resources, definitions);
+  return definitions;
+}
+
+function resources2Definitions(resources: any[], definitions: AtomPropsDefinition) {
+  resources.forEach(resource => {
+    const _declarations = resource.declarations;
+    declarations2Definitions(_declarations, definitions);
+    if (resource.resources && resource.resources.length) {
+      resources2Definitions(resource.resources, definitions);
     }
   });
-  return definitions;
+}
+
+function declarations2Definitions(_declarations, _definitions) {
+  _declarations.forEach(declaration => {
+    if (Object.hasOwn(declaration, 'properties')) {
+      if (!_definitions[declaration.name]) {
+        _definitions[declaration.name] = [];
+      }
+      const d = declaration as ClassLikeDeclaration;
+
+      _definitions[declaration.name].splice(
+        0,
+        0,
+        ...d.properties.map(property => {
+          return {
+            identifier: property.name,
+            type: property.type,
+            description: property.name,
+            required: !property.isOptional ? true : undefined,
+          };
+        }),
+      );
+    }
+    if (Object.hasOwn(declaration, 'methods')) {
+      if (!_definitions[declaration.name]) {
+        _definitions[declaration.name] = [];
+      }
+      const d = declaration as ClassLikeDeclaration;
+
+      _definitions[declaration.name].splice(
+        0,
+        0,
+        ...d.methods.map(method => {
+          return {
+            identifier: method.name,
+            type: `(${method.parameters.map(p => p.name + ' ' + p.type).join(',')})=>${
+              method.type
+            }`,
+            description: method.name,
+            required: !method.isOptional ? true : undefined,
+          };
+        }),
+      );
+    }
+  });
 }
