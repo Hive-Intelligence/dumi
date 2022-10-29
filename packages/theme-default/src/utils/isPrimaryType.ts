@@ -14,7 +14,7 @@ const PRIMARY_TYPES = [
   'data',
   '',
 ];
-const TYPE_SPLIT = /\||\&|,|\<|\>| |\=|\[|\]|\(|\)|\:|"|'/;
+const TYPE_SPLIT = /[\|\&,\<\> \=\[\]\(\)\:"']/;
 export const isPrimaryType = (type: string) => {
   type = type.toLocaleLowerCase();
   if (PRIMARY_TYPES.includes(type))
@@ -28,6 +28,7 @@ export const isPrimaryType = (type: string) => {
     return PRIMARY_TYPES.includes(types[0]);
   }
 };
+
 export const getComplicatedType = (type: string) => {
   type = type.toLocaleLowerCase();
   if (PRIMARY_TYPES.includes(type))
@@ -36,7 +37,7 @@ export const getComplicatedType = (type: string) => {
     return '';
   const cts = type.split(TYPE_SPLIT).filter(t => !isPrimaryType(t));
   if (cts.length >= 1) {
-    return cts[0];
+    return cts[0].split('.').pop();
   } else {
     return false;
   }
