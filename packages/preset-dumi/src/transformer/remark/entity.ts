@@ -44,7 +44,19 @@ function serializeEntityNodes(
   definitions: ReturnType<typeof parser>,
 ) {
   const parsedAttrs = parseElmAttrToProps(node.properties);
-  const expts: string[] = parsedAttrs.exports || Object.keys(definitions);
+  let expts: string[] = parsedAttrs.exports || Object.keys(definitions);
+
+  const exptMap: any = {};
+  if (parsedAttrs.exports) {
+    if (!Array.isArray(parsedAttrs.exports)) {
+      expts = [];
+      Object.keys(parsedAttrs.exports).forEach((expt: string) => {
+        exptMap[expt] = parsedAttrs.exports[expt];
+        expts.push(expt);
+      });
+    }
+  }
+
   const showTitle = !parsedAttrs.hideTitle;
 
   return expts.reduce<(IDumiElmNode | Node)[]>((list, expt, i) => {
@@ -83,7 +95,7 @@ function serializeEntityNodes(
         },
         {
           type: 'text',
-          value: '\n',
+          value: (exptMap?.[expt] || '') + '\n',
         },
       );
     }
