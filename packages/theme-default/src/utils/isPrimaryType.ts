@@ -16,6 +16,7 @@ const PRIMARY_TYPES = [
 ];
 const TYPE_SPLIT = /[\|\&,\<\> \=\[\]\(\)\:"']/;
 export const isPrimaryType = (type: string) => {
+  if (!type) return true;
   type = type.toLocaleLowerCase();
   if (PRIMARY_TYPES.includes(type))
     return true;

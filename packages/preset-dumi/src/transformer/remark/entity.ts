@@ -231,9 +231,31 @@ export default function entity(): IDumiUnifiedTransformer {
   };
 }
 
+function tostr(json_data: object) {
+  let cache = [];
+  const json_str = JSON.stringify(json_data, function (key, value) {
+    if (typeof value === 'object' && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        return;
+      }
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null; //释放cache
+  return json_str;
+}
+
+function debug(name, content) {
+  console.log(`====================start==============${name}=========================`);
+  console.log(tostr(content));
+  console.log(`=====================end=============${name}=========================`);
+}
+
 function parseDefinitions(sourcePath: string): AtomPropsDefinition {
   const parsed = tparser.parseFileSync(sourcePath, '');
   const declarations = parsed.declarations;
+  // debug(sourcePath, declarations);
   const definitions: AtomPropsDefinition = {};
   declarations2Definitions(declarations, definitions);
   const resources = parsed.resources;
@@ -263,10 +285,17 @@ function declarations2Definitions(_declarations, _definitions) {
         0,
         0,
         ...d.properties.map(property => {
+          let desc = `${property.name}&nbsp;`;
+          if (property.visibility === 0) {
+            desc += '可见性：私有&nbsp;';
+          }
+          if (property.isStatic) {
+            desc += '静态属性&nbsp;';
+          }
           return {
             identifier: property.name,
             type: property.type,
-            description: property.name,
+            description: desc,
             required: !property.isOptional ? true : undefined,
           };
         }),
@@ -282,12 +311,19 @@ function declarations2Definitions(_declarations, _definitions) {
         0,
         0,
         ...d.methods.map(method => {
+          let desc = `方法：${method.name}&nbsp;`;
+          if (method.visibility === 0) {
+            desc += '可见性：私有&nbsp;';
+          }
+          if (method.isStatic) {
+            desc += '静态方法&nbsp;';
+          }
           return {
             identifier: method.name,
             type: `(${method.parameters.map(p => p.name + ' ' + p.type).join(',')})=>${
               method.type
             }`,
-            description: method.name,
+            description: desc,
             required: !method.isOptional ? true : undefined,
           };
         }),
