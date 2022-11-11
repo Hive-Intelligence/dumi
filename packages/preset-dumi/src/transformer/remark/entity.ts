@@ -90,7 +90,7 @@ function serializeEntityNodes(
         {
           type: 'element',
           tagName: 'h3',
-          properties: { id: `entity-${expt.toLowerCase()}` },
+          properties: { id: `entity-${expt?.toLowerCase()}` },
           children: [{ type: 'text', value: expt }],
         },
         {
@@ -275,7 +275,7 @@ function resources2Definitions(resources: any[], definitions: AtomPropsDefinitio
 
 function declarations2Definitions(_declarations, _definitions) {
   _declarations.forEach(declaration => {
-    if (Object.hasOwn(declaration, 'properties')) {
+    if (declaration.hasOwnProperty('properties')) {
       if (!_definitions[declaration.name]) {
         _definitions[declaration.name] = [];
       }
@@ -301,7 +301,7 @@ function declarations2Definitions(_declarations, _definitions) {
         }),
       );
     }
-    if (Object.hasOwn(declaration, 'methods')) {
+    if (declaration.hasOwnProperty('methods')) {
       if (!_definitions[declaration.name]) {
         _definitions[declaration.name] = [];
       }

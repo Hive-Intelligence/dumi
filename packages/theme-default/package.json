@@ -1,6 +1,6 @@
 {
   "name": "dumi-theme-default",
-  "version": "1.1.25",
+  "version": "1.50.26",
   "description": "The official default theme of dumi",
   "files": [
     "es",
@@ -25,7 +25,8 @@
     "rc-motion": "^2.4.1",
     "rc-tabs": "^11.7.1",
     "rc-tree": "^5.2.0",
-    "react-error-boundary": "^3.1.4"
+    "react-error-boundary": "^3.1.4",
+    "typescript-parser": "^2.6.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.3",
@@ -33,7 +34,7 @@
     "react-test-renderer": "^16.13.1"
   },
   "peerDependencies": {
-    "@umijs/preset-dumi": "1.x",
+    "@umijs/preset-dumi": "1.50.49",
     "react": "^16.13.1 || ^17.0.0"
   },
   "license": "MIT"
